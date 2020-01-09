@@ -22,5 +22,5 @@
      or
      
      `npx react-native run-ios`
-   <img src="/images/link_binary.gif" width="100%" height="100%" />
+   <img src="/src/images/image1.gif" width="100%" height="100%" />
    
