@@ -18,8 +18,10 @@ import {
   FlatList,
   ActivityIndicator,
   Animated,
+  TouchableOpacity,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
+import { Icon } from 'react-native-elements'
 
 import {
   Header,
@@ -33,133 +35,26 @@ import githubApi from 'src/api/githubApi';
 import { getLangColor } from 'src/constant/githubLangColors';
 
 const HEADER_MAX_HEIGHT = 150;
-const HEADER_MIN_HEIGHT = 90;
+const HEADER_MIN_HEIGHT = 75;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+const AnimatedIcon = Animated.createAnimatedComponent(Icon);
+
+console.disableYellowBox = true;
 
 export default class App extends React.Component {
   state = {
     searchValue: '',
     searchResult: null,
     isLoading: false,
+    isLoadingMore: false,
     scrollY: new Animated.Value(0),
+    totalPage: 0,
+    page: 1,
+    searchResultItems: [],
   };
-  // constructor(props) {
-  //   super(props);
-  //   // SplashScreen.hide()
-  //   this.store = configureStore();
-  // }
-
-  // componentDidMount() {
-  //   if (Text.defaultProps == null) Text.defaultProps = {};
-  //   Text.defaultProps.allowFontScaling = false;
-
-  //   const unsubscribe = NetInfo.addEventListener(state => {
-  //     console.log("Connection type", state.type);
-  //     console.log("Is connected?", state.isConnected);
-  //   });
-  //   if (Platform.OS === 'ios') {
-  //     StatusBarSizeIOS.addEventListener('willChange', this.handleStatusBarSizeWillChange);
-  //   }
-
-  //   AppState.addEventListener('change', this.handleAppStateChange);
-  //   Keyboard.addListener(
-  //     `keyboard${Platform.OS === 'ios' ? 'Will' : 'Did'}Show`,
-  //     this.onKeyboardAppear,
-  //   );
-  //   Keyboard.addListener(
-  //     `keyboard${Platform.OS === 'ios' ? 'Will' : 'Did'}Hide`,
-  //     this.onKeyboardHide,
-  //   );
-  //   this.onKeyboardHide();
-  //   Keyboard.dismiss();
-
-  //   Dimensions.addEventListener('change', () => {
-  //     // this important to reset height according to new height when keyboard appear
-  //     this.onKeyboardHide();
-  //     Keyboard.dismiss();
-
-  //     // this.setState({
-  //     //   orientation: Platform.isPortrait() ? 'portrait' : 'landscape'
-  //     // });
-  //   });
-  // }
-
-  // componentWillUnmount() {
-  //   if (Platform.OS === 'ios') {
-  //     StatusBarSizeIOS.removeEventListener('willChange', this.handleStatusBarSizeWillChange);
-  //   }
-
-  //   AppState.removeEventListener('change', this.handleAppStateChange);
-  // }
-
-  // onKeyboardAppear = (e) => {
-  //   if (Platform.OS === 'ios') {
-  //     StatusBarManager.getHeight(({ height }) => {
-  //       currentscreenHeight = DeviceInfo.isHasNotch ? DeviceInfo.screenHeight : DeviceInfo.screenHeight - (height - 20);
-  //       setKeyboardStateDispatch({
-  //         isAppear: true,
-  //         keyboardHeight: e.endCoordinates.height,
-  //         screenHeight: currentscreenHeight - e.endCoordinates.height,
-  //       });
-  //     });
-  //   } else {
-  //     setKeyboardStateDispatch({
-  //       isAppear: true,
-  //       keyboardHeight: e.endCoordinates.height,
-  //       screenHeight: DeviceInfo.deviceHeight - e.endCoordinates.height - (StatusBar.currentHeight > 27 ? StatusBar.currentHeight : 0),
-  //     });
-  //   }
-  // }
-
-  // onKeyboardHide = () => {
-  //   if (Platform.OS === 'ios') {
-  //     StatusBarManager.getHeight(({ height }) => {
-  //       currentscreenHeight = DeviceInfo.isHasNotch ? DeviceInfo.screenHeight : DeviceInfo.screenHeight - (height - 20);
-  //       setKeyboardStateDispatch({
-  //         isAppear: false,
-  //         screenHeight: currentscreenHeight,
-  //         keyboardHeight: 0,
-  //       });
-  //     });
-  //   } else {
-  //     setKeyboardStateDispatch({
-  //       isAppear: false,
-  //       screenHeight: DeviceInfo.deviceHeight,
-  //       keyboardHeight: 0,
-  //     });
-  //   }
-  // }
-
-  // handleStatusBarSizeWillChange = () => {
-  //   const reduxState = this.store.getState();
-  //   const { app } = reduxState;
-  //   const { keyboard } = app;
-  //   StatusBarManager.getHeight(({ height }) => {
-  //     currentscreenHeight = !keyboard.isAppear ? DeviceInfo.deviceHeight - (height - 20) : keyboard.screenHeight + (height === 20 ? 20 : -20);
-  //     updateStatusBarHeightDispatch(currentscreenHeight);
-  //   });
-  // }
-
-  // handleAppStateChange = (nextAppState) => {
-  //   setAppState(nextAppState);
-  //   if (nextAppState === 'active') {
-  //     // App has come to the foreground!
-  //     console.log('App has come to the foreground!');
-  //     checkMaintenance();
-  //     SplashScreen.hide(); // SplashScreen.hide
-  //   }
-
-  //   if (nextAppState === 'inactive') {
-  //     // App has come to the inactive!
-  //   }
-
-  //   if (nextAppState === 'background') {
-  //     // App has come to the background!
-  //   }
-  // };
 
   onChangeText = (text) => {
     this.setState({
@@ -170,6 +65,8 @@ export default class App extends React.Component {
 
   onSubmit = async (text) => {
     // alert(text);
+    const { searchValue, page, searchResultItems } = this.state;
+    let numOfPage = 0;
     console.log(text)
     if (text === '') {
       alert('Please key in any keyword');
@@ -186,21 +83,70 @@ export default class App extends React.Component {
       }
 
       const result = await githubApi.getRepositories(params);
-      console.log(result);
+      console.log('API Result: ', result);
+      if (result.total_count === 0) {
+        alert(`We couldn’t find any repositories matching '${text}'`)
+      }
+      const numOfPageRaw = (result.total_count / 10).toString();
+      console.log(numOfPageRaw);
+      var numOfPageRef = numOfPageRaw.substr(0, numOfPageRaw.indexOf('.'));
+      if (numOfPageRaw > numOfPageRef) {
+        numOfPage = Number(numOfPageRef) + 1;
+      }
+
+      console.log(numOfPage);
       this.setState({
         searchResult: result,
         isLoading: false,
+        totalPage: numOfPage,
+        page: 1,
+        searchResultItems: result.items,
       })
     }
 
   }
 
+  onLoadMore = async () => {
+    console.log('Load More More');
+    const { searchValue, page, searchResultItems, totalPage } = this.state;
+    console.log(page);
+    console.log(totalPage);
+
+    if (page < totalPage) {
+
+      this.setState({
+        isLoadingMore: true,
+      })
+      const params = {
+        q: searchValue,
+        sort: 'stars',
+        order: 'desc',
+        page: page + 1,
+        per_page: '10'
+      }
+
+      console.log(params);
+
+      const result = await githubApi.getRepositories(params);
+      console.log('API Result: ', result);
+      if (result.total_count === 0) {
+        alert(`We couldn’t find any repositories matching '${text}'`)
+      }
+      this.setState({
+        searchResult: result,
+        isLoadingMore: false,
+        page: params.page,
+        searchResultItems: [...searchResultItems, ...result.items],
+      })
+    }
+
+
+
+  }
+
   renderItem = ({ item, index }) => {
-    console.log('reder');
-    console.log(item);
-    // const langColor = getLangColor();
     return (
-      <Animatable.View animation="slideInUp" delay={index * 150} duration={700} style={{ borderBottomWidth: 0.5, borderBottomColor: 'black' }}>
+      <Animatable.View animation="slideInUp" delay={index < 10 ? index * 150 : 150} duration={700} style={{ borderBottomWidth: 0.5, borderBottomColor: 'grey', marginHorizontal: 10, flex: 1 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}>
           <View style={styles.itemLeft}>
             <Text style={styles.fullNameText}>{item.full_name}</Text>
@@ -208,12 +154,18 @@ export default class App extends React.Component {
             <Text style={styles.updateDtText}>{item.updated_at}</Text>
           </View>
           <View style={styles.itemRight}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.itemRightBox}>
               <View style={{ height: 10, width: 10, backgroundColor: getLangColor(item.language), borderRadius: 10 / 2, marginRight: 3 }} />
               <Text style={styles.languageText}>{item.language}</Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{ height: 10, width: 10, backgroundColor: 'red', marginRight: 3 }} />
+            <View style={styles.itemRightBox}>
+              <View style={{ marginRight: 1 }}>
+                <Icon
+                  name='star'
+                  type='material'
+                  size={14}
+                />
+              </View>
               <Text style={styles.starsText}>{item.stargazers_count}</Text>
             </View>
           </View>
@@ -221,9 +173,25 @@ export default class App extends React.Component {
       </Animatable.View>);
   }
 
+  renderFooter = () => {
+    const { searchResultItems, isLoadingMore, totalPage, page } = this.state;
+    if (searchResultItems.length < 1 || totalPage === page ) return null;
+
+    return (
+      <View style={{ alignItems: 'center', marginVertical: 30 }}>
+        <TouchableOpacity style={{ justifyContent: 'center', alignItems: 'center', height: 40, width: 100, backgroundColor: '#26292E', borderRadius: 5 }} onPress={this.onLoadMore}>
+          {!isLoadingMore && (<Text style={{ color: 'white' }}>Load More</Text>)}
+          {isLoadingMore && (<ActivityIndicator animating size="small" />)}
+        </TouchableOpacity>
+      </View>
+
+    );
+  };
+
   render() {
-    const { searchValue, searchResult, isLoading, scrollY } = this.state;
-    const data = searchResult === null ? [] : searchResult.items;
+    console.log(this.state);
+    const { searchValue, searchResult, isLoading, scrollY, searchResultItems } = this.state;
+    const data = searchResultItems;
     const resultsCount = searchResult === null ? 0 : searchResult.total_count;
     const translateY = scrollY.interpolate({
       inputRange: [0, HEADER_SCROLL_DISTANCE],
@@ -237,8 +205,8 @@ export default class App extends React.Component {
       extrapolate: 'clamp',
     });
     const opacity = scrollY.interpolate({
-      inputRange: [0, HEADER_SCROLL_DISTANCE],
-      outputRange: [1, 0],
+      inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
+      outputRange: [1, 0, 0],
       extrapolate: 'clamp',
     });
 
@@ -247,13 +215,20 @@ export default class App extends React.Component {
       outputRange: [35, 25],
       extrapolate: 'clamp',
     });
+
+    const searchBarIconSize = scrollY.interpolate({
+      inputRange: [0, HEADER_SCROLL_DISTANCE],
+      outputRange: [20, 16],
+      extrapolate: 'clamp',
+    });
+
     return (
       <>
         <StatusBar barStyle="light-content" />
         <View style={styles.container}>
 
           <Animated.View style={{
-            paddingVertical: 30, paddingHorizontal: 20, backgroundColor: '#25292E', height: 150, position: 'absolute',
+            justifyContent: 'flex-end', paddingHorizontal: 20, backgroundColor: '#25292E', height: 150, position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
@@ -261,45 +236,50 @@ export default class App extends React.Component {
             // height,
             transform: [{ translateY }],
           }}>
-            <Animated.View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: 10, opacity }}>
-              <Text style={{ color: 'white' }}>Github Repo Search</Text>
+            <Animated.View style={{ paddingVertical: 10, opacity }}>
+              <Text style={{ color: 'white' }}>Github Repository Search</Text>
             </Animated.View>
 
-            <View style={{ borderColor: 'gray', borderWidth: 1, borderRadius: 18, paddingHorizontal: 10, marginVertical: 20 }}>
+            <View style={{ borderColor: '#3F4347', borderWidth: 1, borderRadius: 5, paddingHorizontal: 5, marginVertical: 20, backgroundColor: '#3F4347', flexDirection: 'row', alignItems: 'center' }}>
               <AnimatedTextInput
-                style={{ height: searchBarSize, color: 'white' }}
+                style={{ height: searchBarSize, color: 'white', flex: 0.99 }}
                 onChangeText={text => this.onChangeText(text)}
                 onSubmitEditing={event => this.onSubmit(event.nativeEvent.text)}
                 value={searchValue}
+                keyboardType="default"
+                autoCapitalize='none'
+                placeholder='Search repository'
+              />
+              <AnimatedIcon
+                name='search'
+                type='material'
+                color={searchValue === '' ? 'grey' : 'white'}
+                size={searchBarIconSize}
               />
             </View>
           </Animated.View>
           <AnimatedScrollView
             showsVerticalScrollIndicator={false}
-            scrollEventThrottle={6}
+            scrollEventThrottle={30}
             decelerationRate="normal"
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
               {
                 useNativeDriver: false,
-                // listener: (event) => {
-                //   const { y } = event.nativeEvent.contentOffset;
-                //   if (index === tabToCheck) {
-                //     this.alignScrollViews(route.key, y);
-                //   }
-                // },
               },
-            )}
-            contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT + 10 }}
+            )
+            }
+            contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT }}
           >
-            <View style={{ paddingVertical: 30, flex: 1, justifyContent: 'center' }}>
-              {isLoading && (<ActivityIndicator size="large" color="#0000ff" />)}
+            <View style={{ paddingTop: 10, flex: 1, justifyContent: 'center' }}>
+              {isLoading && (<ActivityIndicator size="large" />)}
               {resultsCount !== 0 && !isLoading && (<Animatable.Text animation="fadeIn" duration={700} style={styles.listTitle}>{`${resultsCount} repository results`}</Animatable.Text>)}
               {!isLoading && (<FlatList
-                style={{ borderWidth: data.length > 0 ? 0.5 : 0, marginVertical: 10 }}
+                style={{ borderTopWidth: data.length > 0 ? 0.5 : 0, marginVertical: 10, borderTopColor: 'grey' }}
                 data={data}
                 renderItem={this.renderItem}
                 keyExtractor={(item, index) => index.toString()}
+                ListFooterComponent={this.renderFooter}
               />)}
             </View>
           </AnimatedScrollView>
@@ -343,8 +323,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  itemLeft: { justifyContent: 'center', flex: 0.6, paddingVertical: 10, paddingHorizontal: 5 },
+  itemLeft: { justifyContent: 'center', flex: 0.6, paddingVertical: 10, paddingLeft: 5, paddingRight: 10 },
   itemRight: { justifyContent: 'space-between', flex: 0.4, flexDirection: 'row', alignItems: 'center', paddingRight: 5 },
+  itemRightBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' },
   listTitle: {
     fontSize: 13,
     fontWeight: 'bold',
