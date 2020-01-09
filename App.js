@@ -24,14 +24,6 @@ import moment from 'moment';
 import * as Animatable from 'react-native-animatable';
 import { Icon } from 'react-native-elements'
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
 import githubApi from 'src/api/githubApi';
 import { getLangColor } from 'src/constant/githubLangColors';
 
@@ -65,10 +57,8 @@ export default class App extends React.Component {
   }
 
   onSubmit = async (text) => {
-    // alert(text);
     const { searchValue, page, searchResultItems } = this.state;
     let numOfPage = 0;
-    console.log(text)
     if (text === '') {
       alert('Please key in any keyword');
     } else {
@@ -89,13 +79,11 @@ export default class App extends React.Component {
         alert(`We couldn’t find any repositories matching '${text}'`)
       }
       const numOfPageRaw = (result.total_count / 10).toString();
-      console.log(numOfPageRaw);
       var numOfPageRef = numOfPageRaw.substr(0, numOfPageRaw.indexOf('.'));
       if (numOfPageRaw > numOfPageRef) {
         numOfPage = Number(numOfPageRef) + 1;
       }
 
-      console.log(numOfPage);
       this.setState({
         searchResult: result,
         isLoading: false,
@@ -108,10 +96,7 @@ export default class App extends React.Component {
   }
 
   onLoadMore = async () => {
-    console.log('Load More More');
     const { searchValue, page, searchResultItems, totalPage } = this.state;
-    console.log(page);
-    console.log(totalPage);
 
     if (page < totalPage) {
 
@@ -125,8 +110,6 @@ export default class App extends React.Component {
         page: page + 1,
         per_page: '10'
       }
-
-      console.log(params);
 
       const result = await githubApi.getRepositories(params);
       console.log('API Result: ', result);
@@ -146,7 +129,6 @@ export default class App extends React.Component {
   }
 
   renderItem = ({ item, index }) => {
-    console.log(item);
     return (
       <Animatable.View animation="slideInUp" delay={index < 10 ? index * 150 : 150} duration={700} style={{ borderBottomWidth: 0.5, borderBottomColor: 'grey', marginHorizontal: 10, flex: 1 }}>
       <TouchableOpacity onPress={() => {Linking.openURL(item.html_url)}} >
@@ -193,7 +175,6 @@ export default class App extends React.Component {
   };
 
   render() {
-    console.log(this.state);
     const { searchValue, searchResult, isLoading, scrollY, searchResultItems } = this.state;
     const data = searchResultItems;
     const resultsCount = searchResult === null ? 0 : searchResult.total_count;
@@ -287,41 +268,11 @@ export default class App extends React.Component {
               />)}
             </View>
           </AnimatedScrollView>
-          {/* <View style={{ paddingVertical: 30, flex: 1, justifyContent: 'center' }}>
-            {isLoading && (<ActivityIndicator size="large" color="#0000ff" />)}
-            {resultsCount !== 0 && !isLoading && (<Animatable.Text animation="fadeIn" duration={700} style={styles.listTitle}>{`${resultsCount} repository results`}</Animatable.Text>)}
-            {!isLoading && (<FlatList
-              style={{ borderWidth: data.length > 0 ? 0.5 : 0, marginVertical: 10 }}
-              data={data}
-              renderItem={this.renderItem}
-              keyExtractor={(item, index) => index.toString()}
-            />)}
-          </View> */}
         </View>
       </>
     );
   }
 }
-
-// const App: () => React$Node = () => {
-//   return (
-//     <>
-//       <StatusBar barStyle="dark-content" />
-//       <SafeAreaView>
-//         <View style={{ alignItems: 'center', paddingTop: 50 }}>
-//           <Text>Github Repo Search</Text>
-//         </View>
-//         <View>
-//           <TextInput
-//             style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
-//             onChangeText={text => onChangeText(text)}
-//             value={value}
-//           />
-//         </View>
-//       </SafeAreaView>
-//     </>
-//   );
-// };
 
 const styles = StyleSheet.create({
   container: {
@@ -361,5 +312,3 @@ const styles = StyleSheet.create({
     fontWeight: 'normal',
   },
 });
-
-// export default App;
