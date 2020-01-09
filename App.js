@@ -79,9 +79,11 @@ export default class App extends React.Component {
         alert(`We couldn’t find any repositories matching '${text}'`)
       }
       const numOfPageRaw = (result.total_count / 10).toString();
-      var numOfPageRef = numOfPageRaw.substr(0, numOfPageRaw.indexOf('.'));
-      if (numOfPageRaw > numOfPageRef) {
+      const numOfPageRef = parseInt(numOfPageRaw, 10);
+      if (Number(numOfPageRaw) > Number(numOfPageRef)) {
         numOfPage = Number(numOfPageRef) + 1;
+      } else {
+        numOfPage = Number(numOfPageRaw);
       }
 
       this.setState({
