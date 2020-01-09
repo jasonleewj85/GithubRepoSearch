@@ -20,6 +20,7 @@ import {
   Animated,
   TouchableOpacity,
 } from 'react-native';
+import moment from 'moment';
 import * as Animatable from 'react-native-animatable';
 import { Icon } from 'react-native-elements'
 
@@ -151,7 +152,7 @@ export default class App extends React.Component {
           <View style={styles.itemLeft}>
             <Text style={styles.fullNameText}>{item.full_name}</Text>
             <Text numberOfLines={2} style={styles.descriptionText}>{item.description}</Text>
-            <Text style={styles.updateDtText}>{item.updated_at}</Text>
+            <Text style={styles.updateDtText}>{`Updated on ${moment(item.updated_at).format("ddd MMM DD YYYY")}`}</Text>
           </View>
           <View style={styles.itemRight}>
             <View style={styles.itemRightBox}>
@@ -260,7 +261,7 @@ export default class App extends React.Component {
           </Animated.View>
           <AnimatedScrollView
             showsVerticalScrollIndicator={false}
-            scrollEventThrottle={30}
+            scrollEventThrottle={6}
             decelerationRate="normal"
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -338,7 +339,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   descriptionText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: 'normal',
     paddingVertical: 5,
   },
@@ -346,6 +347,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: 'normal',
     paddingVertical: 10,
+    color: 'grey'
   },
   languageText: {
     fontSize: 10,
@@ -354,42 +356,6 @@ const styles = StyleSheet.create({
   starsText: {
     fontSize: 10,
     fontWeight: 'normal',
-  },
-  scrollView: {
-    backgroundColor: Colors.lighter,
-  },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
   },
 });
 
