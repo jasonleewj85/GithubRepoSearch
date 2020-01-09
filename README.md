@@ -4,7 +4,7 @@
 
 **Download React Native Github Repository Search project**
 
-   Download the project file 👉 [HERE](https://github.com/jasonleewj85/GithubRepoSearch.git) 👈
+   Download the project file 👉 [HERE](https://github.com/jasonleewj85/GithubRepoSearch/archive/master.zip) 👈
    
    - Unzip project.
    
