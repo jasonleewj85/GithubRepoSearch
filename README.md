@@ -4,7 +4,7 @@
 
 **Download React Native Github Repository Search project**
 
-   Download the project file 👉 [HERE](https://github.com/jasonleewj85/GithubRepoSearch.git) 👈
+   Download the project file 👉 [HERE](https://github.com/jasonleewj85/GithubRepoSearch/archive/master.zip) 👈
    
    - Unzip project.
    
@@ -17,10 +17,13 @@
      `pod install`
    
    - navigate back to GithubRepoSearch
-     open GithubRepoSearch.xcworkspace from xcode and press run button
+   
+     - open GithubRepoSearch.xcworkspace from xcode and press run button`
      
      or
      
      `npx react-native run-ios`
-   <img src="/src/images/image1.gif" width="100%" height="100%" />
+     
+   <img src="/src/images/image1.gif" width="40%" height="40%" />
+   <img src="/src/images/image2.gif" width="40%" height="40%" />
    
