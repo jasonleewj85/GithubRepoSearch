@@ -8,7 +8,6 @@
 
 import React from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   ScrollView,
   View,
@@ -19,6 +18,7 @@ import {
   ActivityIndicator,
   Animated,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import moment from 'moment';
 import * as Animatable from 'react-native-animatable';
@@ -146,8 +146,10 @@ export default class App extends React.Component {
   }
 
   renderItem = ({ item, index }) => {
+    console.log(item);
     return (
       <Animatable.View animation="slideInUp" delay={index < 10 ? index * 150 : 150} duration={700} style={{ borderBottomWidth: 0.5, borderBottomColor: 'grey', marginHorizontal: 10, flex: 1 }}>
+      <TouchableOpacity onPress={() => {Linking.openURL(item.html_url)}} >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}>
           <View style={styles.itemLeft}>
             <Text style={styles.fullNameText}>{item.full_name}</Text>
@@ -171,6 +173,7 @@ export default class App extends React.Component {
             </View>
           </View>
         </View>
+        </TouchableOpacity>
       </Animatable.View>);
   }
 
