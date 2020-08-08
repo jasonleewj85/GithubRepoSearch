@@ -36,20 +36,5 @@ target 'GithubRepoSearch' do
 
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 
-  target 'GithubRepoSearchTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-
   use_native_modules!
-end
-
-target 'GithubRepoSearch-tvOS' do
-  # Pods for GithubRepoSearch-tvOS
-
-  target 'GithubRepoSearch-tvOSTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-
 end
