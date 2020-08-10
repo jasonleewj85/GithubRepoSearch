@@ -43,7 +43,7 @@ platform :ios do
       skip_waiting_for_build_processing: false, 
       distribute_external: true, 
       groups: [options[:env]], 
-      changelog: options[:changelog]
+      changelog: ENV["GIT_COMMIT_BODY"]
     )
   end
   lane :beta do |options|
