@@ -29,7 +29,7 @@ platform :ios do
       clean: true,
     )
   end
-  lane :test_flight do
+  lane :test_flight do |options|
     changelog_from_git_commits
     upload_to_testflight(
       beta_app_review_info: {
@@ -42,11 +42,12 @@ platform :ios do
       }, 
       skip_waiting_for_build_processing: false, 
       distribute_external: true, 
-      groups: ["SIT"], 
+      groups: [options[:env]], 
     )
   end
-  lane :beta do
+  lane :beta do |options|
     build
+    test_flight env:options[:env]
   end
 end
 
