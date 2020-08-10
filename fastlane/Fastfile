@@ -1,10 +1,5 @@
 
 platform :ios do
-  lane :tests do
-    run_tests(
-            devices: ["iPhone 11 Pro", "iPhone 8"],
-            scheme: "GithubRepoSearch")
-  end
   lane :ios_build do
     cocoapods(
       clean_install: true,
