@@ -1,0 +1,57 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  lane :tests do
+    run_tests(
+            devices: ["iPhone 11 Pro", "iPhone 8"],
+            scheme: "GithubRepoSearch")
+  end
+  desc "Push a new beta build to TestFlight"
+  lane :build do
+    profile_type = "appstore"
+    export_method = "app-store"
+    app_version = get_version_number(xcodeproj: "GithubRepoSearch.xcodeproj", target: "GithubRepoSearch")
+    new_build_number = latest_testflight_build_number(version: app_version, initial_build_number: 0) + 1
+    increment_build_number(build_number: new_build_number, xcodeproj: "GithubRepoSearch.xcodeproj")
+    build_app(
+      workspace: "GithubRepoSearch.xcworkspace", 
+      scheme: "GithubRepoSearch",
+      clean: true,
+    )
+  end
+  lane :test_flight do
+    upload_to_testflight(
+      beta_app_review_info: {
+        contact_email: "lee.wei.jun@rhbgroup.com",
+        contact_first_name: "Jason",
+        contact_last_name: "Lee",
+        contact_phone: "12345678",
+        demo_account_name: "demo",
+        demo_account_password: "demo"
+      }, 
+      skip_waiting_for_build_processing: false, 
+      distribute_external: true, 
+      groups: ["SIT"], 
+      changelog: "this is my changelog"
+    )
+  end
+  lane :beta do
+    build
+    test_flight
+  end
+end
