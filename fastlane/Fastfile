@@ -52,7 +52,6 @@ platform :ios do
   end
 end
 
-
 platform :android do
   # Android Lanes
 end
