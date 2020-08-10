@@ -43,7 +43,7 @@ platform :ios do
       skip_waiting_for_build_processing: false, 
       distribute_external: true, 
       groups: [options[:env]], 
-      changelog: ENV["GIT_COMMIT_BODY"]
+      changelog: options[:changelog]
     )
   end
   lane :beta do |options|
@@ -51,6 +51,7 @@ platform :ios do
     test_flight env:options[:env]
   end
 end
+
 
 platform :android do
   # Android Lanes
