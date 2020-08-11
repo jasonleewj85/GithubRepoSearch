@@ -1,4 +1,4 @@
-package com.githubreposearch;
+package com.rhbgroup.fastlane.dev;
 
 import android.app.Application;
 import android.content.Context;

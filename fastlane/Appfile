@@ -1,8 +1,15 @@
+# For IOS
 app_identifier("com.rhbgroup.fastlane.dev") # The bundle identifier of your app
 apple_id("dcp.rhbdigital@gmail.com") # Your Apple email address
 
 itc_team_id("119024150") # App Store Connect Team ID
 team_id("2SP4M85Q5A") # Developer Portal Team ID
+
+
+# For Android
+json_key_file("") # Path to the json secret file - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
+package_name("com.rhbgroup.fastlane.dev") # e.g. com.krausefx.app
+
 
 # For more information about the Appfile, see:
 #     https://docs.fastlane.tools/advanced/#appfile

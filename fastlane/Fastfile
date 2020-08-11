@@ -53,5 +53,61 @@ platform :ios do
 end
 
 platform :android do
-  # Android Lanes
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test", project_dir: 'android/')
+  end
+  lane :clean do
+    gradle(task: "clean", project_dir: 'android/')
+  end
+  lane :buildDebug do
+    clean
+    gradle(
+      task: "assembleDebug",
+      project_dir: 'android/',
+    )
+  end
+  lane :buildRelease do |options|
+    isStorefile = options[:store]
+    if options[:store]
+      storeFile = options[:store]
+      storePass = options[:pass]
+      keyAlias = options[:alias]
+      keyPass = options[:apass]
+    else	
+  	  storeFile = ENV["APP1_STORE_FILE"]
+      storePass = ENV["APP1_STORE_PASS"]
+      keyAlias = ENV["APP1_KEY_ALIAS"]
+      keyPass = ENV["APP1_KEY_PASS"]
+    end
+    clean
+    gradle(
+      task: "assemble",
+      build_type: "Release",
+      project_dir: 'android/',
+      print_command: false,
+      print_command_output: true,
+      properties: {
+        "MYAPP_RELEASE_STORE_FILE" => storeFile,
+        "MYAPP_RELEASE_STORE_PASSWORD" => storePass,
+        "MYAPP_RELEASE_KEY_ALIAS" => keyAlias,
+        "MYAPP_RELEASE_KEY_PASSWORD" => keyPass
+      }
+    )
+  end
+
+  desc "Submit a new Beta Build to Crashlytics Beta"
+  lane :beta do
+    gradle(task: "clean assembleRelease")
+    crashlytics
+  
+    # sh "your_script.sh"
+    # You can also use other beta testing services here
+  end
+
+  desc "Deploy a new version to the Google Play"
+  lane :deploy do
+    gradle(task: "clean assembleRelease")
+    upload_to_play_store
+  end
 end

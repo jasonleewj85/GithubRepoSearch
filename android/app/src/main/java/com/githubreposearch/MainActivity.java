@@ -1,4 +1,4 @@
-package com.githubreposearch;
+package com.rhbgroup.fastlane.dev;
 
 import com.facebook.react.ReactActivity;
 
